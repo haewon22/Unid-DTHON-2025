@@ -21,7 +21,8 @@ def _patched_dilated_conv(self, x, dilation):
         x = self.dcv.act(x)
     return x
 
-g2l_crm.DilatedBlock.dilated_conv = _patched_dilated_conv```
+g2l_crm.DilatedBlock.dilated_conv = _patched_dilated_conv
+```
 
 (2) 또는 cmd에서   
 ```python train_doclayout.py —gpu_id 0 —sample_ratio 0.1 —epochs 5 —batch_size 32  —skip_dla``` 입력
