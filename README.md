@@ -25,4 +25,7 @@ g2l_crm.DilatedBlock.dilated_conv = _patched_dilated_conv
 ```
 
 (2) 또는 cmd에서   
-```python train_doclayout.py —gpu_id 0 —sample_ratio 0.1 —epochs 5 —batch_size 32  —skip_dla``` 입력
+```python train_doclayout.py —gpu_id 0 —sample_ratio 0.1 —epochs 5 —batch_size 32  —skip_dla``` 입력   
+
+
+* data preprocessing은 제출 코드에 포함되어있습니다. 
