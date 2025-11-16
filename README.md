@@ -1,7 +1,7 @@
 # Uni-DTHON-2025: DocLayout-AI Pipeline
 
 문서 이미지에서 **구성요소 탐지(DLA: YOLO 기반)** → **텍스트·이미지
-매칭(Matcher: Swin+RoBERTa 기반)** 두 단계를 학습하는 파이프라인입니다.
+매칭(Matcher: Swin+RoBERTa 기반)** 두 단계 학습
 
 ## 구성요소
 
