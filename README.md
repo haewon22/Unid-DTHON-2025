@@ -1,31 +1,73 @@
-# Unid-DTHON-2025
+# Uni-DTHON-2025: DocLayout-AI Pipeline
 
-1. trian.py가 실행되지 않는다면, model_train.py로 실행
-2. 경로 수정
-3. stage1 -> stage2로 넘어가는 과정에서 bn error 발생 시,
-(1)   코드 상단에 아래 코드 첨부
+문서 이미지에서 **구성요소 탐지(DLA: YOLO 기반)** → **텍스트·이미지
+매칭(Matcher: Swin+RoBERTa 기반)** 두 단계를 학습하는 파이프라인입니다.
 
+## 구성요소
+
+### 1. **DLA (Document Layout Analyzer) -- YOLOv10 기반**
+
+-   JSON → YOLO 포맷 변환 자동 처리\
+-   DocLayout-YOLO 사전학습 모델 사용 가능\
+-   문서 내 특정 요소 박스 검출 학습
+
+### 2. **Matcher (Text--Image Alignment)**
+
+-   RoBERTa 텍스트 인코더 + Swin 이미지 인코더\
+-   시각 영역을 crop 후 텍스트 정보와 매칭\
+-   Contrastive Loss로 텍스트 ↔ 이미지 임베딩 정렬
+
+## 데이터 구조
+
+    base_path/
+     └── train_valid/
+          ├── train/
+          │    ├── press_json/
+          │    └── report_json/
+          └── valid/
+               ├── press_json/
+               └── report_json/
+
+## 주요 실행 옵션
+
+  옵션               설명                             기본값
+  ------------------ -------------------------------- --------
+  --skip_dla         YOLO 단계 건너뛰기               False
+  --skip_matcher     Matcher 단계 건너뛰기            False
+  --sample_ratio     데이터 샘플링 비율               0.1
+  --epochs_dla       YOLO 학습 epoch                  15
+  --epochs           Matcher 학습 epoch               10
+  --use_pretrained   DocLayout-YOLO Pretrained 사용   False
+
+## 실행 방법
+
+### 전체 파이프라인 학습
+
+``` bash
+python train.py --base_path /path/to/dataset
 ```
-import torch.nn.functional as F
-import doclayout_yolo.nn.modules.g2l_crm as g2l_crm
 
-def _patched_dilated_conv(self, x, dilation):
-    weight = self.dcv.conv.weight
-    padding = dilation * (self.k // 2)
+### YOLO만 학습
 
-    x = F.conv2d(x, weight, stride=1, padding=padding, dilation=dilation)
-
-    if hasattr(self.dcv, "bn") and self.dcv.bn is not None:
-        x = self.dcv.bn(x)
-    if hasattr(self.dcv, "act") and self.dcv.act is not None:
-        x = self.dcv.act(x)
-    return x
-
-g2l_crm.DilatedBlock.dilated_conv = _patched_dilated_conv
+``` bash
+python train.py --skip_matcher
 ```
 
-(2) 또는 cmd에서   
-```python train_doclayout.py —gpu_id 0 —sample_ratio 0.1 —epochs 5 —batch_size 32  —skip_dla``` 입력   
+### Matcher만 학습
 
+``` bash
+python train.py --skip_dla
+```
 
-* data preprocessing은 제출 코드에 포함되어있습니다. 
+## 출력 구조
+
+    checkpoints_matcher/      # Matcher 모델 가중치
+    runs/doclayout_yolo/      # YOLO 학습 로그 및 weight
+    yolo_format/              # 생성된 YOLO 포맷 데이터
+
+## 특징 요약
+
+-   JSON 기반 문서 데이터 자동 처리\
+-   YOLO 기반 레이아웃 검출 + Multimodal Matching 2-Stage 구조\
+-   Contrastive Loss 기반 텍스트-이미지 정렬\
+-   Swin / RoBERTa 등 HuggingFace 기반 백본 사용
